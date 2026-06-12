@@ -5,6 +5,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
+import '../utils/responsive_helper.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -99,52 +100,33 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-    
-    // Scale factor based on standard mobile width of 375
-    // Constrained so font sizes and spacing scale nicely on small/large mobile screens
-    final double scaleFactor = (screenWidth < 600) 
-        ? (screenWidth / 375.0).clamp(0.85, 1.15) 
-        : 1.0;
+    final rh = ResponsiveHelper(context);
 
     // Responsive padding and spacing calculations
-    final double screenPaddingHorizontal = (screenWidth < 360 ? 8.0 : 16.0) * scaleFactor;
-    final double screenPaddingVertical = (screenHeight < 600 ? 8.0 : 16.0) * scaleFactor;
-    final double cardPaddingHorizontal = (screenWidth < 360 ? 16.0 : 28.0) * scaleFactor;
-    final double cardPaddingVertical = (screenHeight < 600 ? 16.0 : 28.0) * scaleFactor;
-
-    // Cap the form width to 550px for tablet/web support (increasing overall width by ~20%)
-    final double maxContentWidth = screenWidth < 600 ? (screenWidth - screenPaddingHorizontal * 2).clamp(280.0, 550.0) : 550.0;
+    final double screenPaddingHorizontal = rh.screenPaddingHorizontal;
+    final double screenPaddingVertical = rh.screenPaddingVertical;
+    final double cardPaddingHorizontal = rh.cardPaddingHorizontal;
+    final double cardPaddingVertical = rh.cardPaddingVertical;
+    final double maxContentWidth = rh.maxContentWidth;
 
     // Spacing heights scaled responsively
-    final double headerTitleFontSize = 24.0 * scaleFactor;
-    final double headerSubtitleFontSize = 13.0 * scaleFactor;
-    final double headerSpacing = 4.0 * scaleFactor;
-    final double headerToFieldsSpacing = 16.0 * scaleFactor;
-    final double fieldSpacing = 10.0 * scaleFactor;
-    final double passwordToSelectionSpacing = 12.0 * scaleFactor;
-    final double selectionLabelBottomPadding = 6.0 * scaleFactor;
-    final double selectionToButtonSpacing = 16.0 * scaleFactor;
-    // Button height is set to 56.0 on larger heights (within 56-60 range), and scales responsively on smaller heights
-    final double buttonHeight = (screenHeight < 600 ? 48.0 : 56.0) * scaleFactor;
-    final double buttonFontSize = 16.0 * scaleFactor;
-    final double buttonToSignInSpacing = 10.0 * scaleFactor;
-    final double bottomTextFontSize = 14.0 * scaleFactor;
-    final double fieldVerticalPadding = 14.0 * scaleFactor; // makes field height 58-64px
+    final double headerTitleFontSize = rh.text(22.0);
+    final double headerSubtitleFontSize = rh.text(12.0);
+    final double headerSpacing = rh.space(4.0);
+    final double headerToFieldsSpacing = rh.space(14.0);
+    final double fieldSpacing = rh.space(8.0);
+    final double passwordToSelectionSpacing = rh.space(10.0);
+    final double selectionLabelBottomPadding = rh.space(5.0);
+    final double selectionToButtonSpacing = rh.space(14.0);
+    // Button height and fontSize are scaled dynamically inside CustomButton, so we pass base values
+    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
+    final double buttonFontSize = 15.0;
+    final double buttonToSignInSpacing = rh.space(8.0);
+    final double bottomTextFontSize = rh.text(13.0);
+    final double fieldVerticalPadding = 12.0; // custom text field scales it
 
     return Scaffold(
       backgroundColor: const Color(0xFF000000), // simple clean background
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 40,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -396,8 +378,11 @@ class _SignupScreenState extends State<SignupScreen> {
                               SizedBox(height: buttonToSignInSpacing),
                               
                               // Navigate to Signin
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 4,
+                                runSpacing: 4,
                                 children: [
                                   Text(
                                     'Already have an account?',
@@ -455,19 +440,12 @@ class _AccountTypeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    
-    // Scale factor based on standard mobile width of 375
-    // Constrained so font sizes and spacing scale nicely on small/large mobile screens
-    final double scaleFactor = (screenWidth < 600) 
-        ? (screenWidth / 375.0).clamp(0.85, 1.15) 
-        : 1.0;
+    final rh = ResponsiveHelper(context);
 
-    final double verticalPadding = 12.0 * scaleFactor;
-    final double iconSize = 24.0 * scaleFactor;
-    final double spacing = 4.0 * scaleFactor;
-    final double fontSize = 13.0 * scaleFactor;
+    final double verticalPadding = rh.space(10.0);
+    final double iconSize = rh.space(22.0);
+    final double spacing = rh.space(4.0);
+    final double fontSize = rh.text(12.0);
 
     return Material(
       color: Colors.transparent,
@@ -495,12 +473,15 @@ class _AccountTypeCard extends StatelessWidget {
                 size: iconSize,
               ),
               SizedBox(height: spacing),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  color: isSelected ? Colors.white : const Color(0xFFB3B3B3),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: fontSize,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: isSelected ? Colors.white : const Color(0xFFB3B3B3),
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: fontSize,
+                  ),
                 ),
               ),
             ],
@@ -521,33 +502,26 @@ class ApprovalWaitingScreen extends StatelessWidget {
     const Color borderDark = Color(0xFF262626);
     const Color textLight = Color(0xFFB3B3B3);
 
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-
-    // Scale factor based on standard mobile width of 375
-    // Constrained so font sizes and spacing scale nicely on small/large mobile screens
-    final double scaleFactor = (screenWidth < 600) 
-        ? (screenWidth / 375.0).clamp(0.85, 1.15) 
-        : 1.0;
+    final rh = ResponsiveHelper(context);
 
     // Responsive padding and spacing calculations
-    final double screenPaddingHorizontal = (screenWidth < 360 ? 12.0 : 24.0) * scaleFactor;
-    final double screenPaddingVertical = (screenHeight < 600 ? 8.0 : 16.0) * scaleFactor;
-    final double cardPadding = (screenWidth < 360 ? 16.0 : 32.0) * scaleFactor;
-    final double maxContentWidth = screenWidth < 600 ? (screenWidth - screenPaddingHorizontal * 2).clamp(280.0, 420.0) : 420.0;
+    final double screenPaddingHorizontal = rh.screenPaddingHorizontal;
+    final double screenPaddingVertical = rh.screenPaddingVertical;
+    final double cardPadding = rh.cardPaddingHorizontal;
+    final double maxContentWidth = rh.maxContentWidth;
 
     // Responsive sizes for elements inside card
-    final double iconSize = (screenHeight < 600 ? 44.0 : 56.0) * scaleFactor;
-    final double titleFontSize = 26.0 * scaleFactor;
-    final double subtitleFontSize = 16.0 * scaleFactor;
-    final double additionalMsgFontSize = 14.0 * scaleFactor;
-    final double buttonHeight = (screenHeight < 600 ? 44.0 : 52.0) * scaleFactor;
-    final double buttonFontSize = 16.0 * scaleFactor;
+    final double iconSize = rh.space(rh.screenHeight < 600 ? 44.0 : 56.0);
+    final double titleFontSize = rh.text(24.0);
+    final double subtitleFontSize = rh.text(14.0);
+    final double additionalMsgFontSize = rh.text(12.0);
+    // Button scales internally
+    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
+    final double buttonFontSize = 15.0;
 
-    final double spacerSmall = 16.0 * scaleFactor;
-    final double spacerMedium = 28.0 * scaleFactor;
-    final double spacerLarge = 40.0 * scaleFactor;
+    final double spacerSmall = rh.space(12.0);
+    final double spacerMedium = rh.space(24.0);
+    final double spacerLarge = rh.space(36.0);
 
     return Scaffold(
       backgroundColor: Colors.black, // black background

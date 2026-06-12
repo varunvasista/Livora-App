@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
+import '../utils/responsive_helper.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -169,40 +170,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-    
-    // Scale factor based on standard mobile width of 375
-    // Constrained so font sizes and spacing scale nicely on small/large mobile screens
-    final double scaleFactor = (screenWidth < 600) 
-        ? (screenWidth / 375.0).clamp(0.85, 1.15) 
-        : 1.0;
+    final rh = ResponsiveHelper(context);
 
     // Responsive padding and spacing calculations
-    final double screenPaddingHorizontal = (screenWidth < 360 ? 12.0 : 24.0) * scaleFactor;
-    final double screenPaddingVertical = (screenHeight < 600 ? 8.0 : 16.0) * scaleFactor;
-    final double cardPaddingHorizontal = (screenWidth < 360 ? 16.0 : 24.0) * scaleFactor;
-    final double cardPaddingVertical = (screenHeight < 600 ? 20.0 : 32.0) * scaleFactor;
-
-    // Cap the form width to 450px on tablets/web as per responsiveness requirements
-    final double maxContentWidth = screenWidth < 600 ? (screenWidth - screenPaddingHorizontal * 2).clamp(280.0, 450.0) : 450.0;
+    final double screenPaddingHorizontal = rh.screenPaddingHorizontal;
+    final double screenPaddingVertical = rh.screenPaddingVertical;
+    final double cardPaddingHorizontal = rh.cardPaddingHorizontal;
+    final double cardPaddingVertical = rh.cardPaddingVertical;
+    final double maxContentWidth = rh.maxContentWidth;
 
     // Responsive sizes for elements inside card
-    final double logoSize = (screenHeight < 600 ? 48.0 : 64.0) * scaleFactor;
-    final double logoToTitleSpace = (screenHeight < 600 ? 12.0 : 20.0) * scaleFactor;
-    final double titleFontSize = 26.0 * scaleFactor;
-    final double titleToSubtitleSpace = (screenHeight < 600 ? 6.0 : 8.0) * scaleFactor;
-    final double subtitleFontSize = 14.0 * scaleFactor;
-    final double subtitleToFieldsSpace = (screenHeight < 600 ? 20.0 : 36.0) * scaleFactor;
-    final double fieldSpacing = (screenHeight < 600 ? 12.0 : 20.0) * scaleFactor;
-    final double passwordToForgotSpace = (screenHeight < 600 ? 4.0 : 8.0) * scaleFactor;
-    final double forgotPasswordFontSize = 14.0 * scaleFactor;
-    final double buttonSpace = (screenHeight < 600 ? 16.0 : 28.0) * scaleFactor;
-    final double buttonHeight = (screenHeight < 600 ? 44.0 : 52.0) * scaleFactor;
-    final double buttonFontSize = 16.0 * scaleFactor;
-    final double postButtonSpace = (screenHeight < 600 ? 16.0 : 24.0) * scaleFactor;
-    final double bottomTextFontSize = 14.0 * scaleFactor;
+    final double logoSize = rh.space(rh.screenHeight < 600 ? 44.0 : 56.0);
+    final double logoToTitleSpace = rh.space(rh.screenHeight < 600 ? 12.0 : 18.0);
+    final double titleFontSize = rh.text(24.0);
+    final double titleToSubtitleSpace = rh.space(rh.screenHeight < 600 ? 6.0 : 8.0);
+    final double subtitleFontSize = rh.text(13.0);
+    final double subtitleToFieldsSpace = rh.space(rh.screenHeight < 600 ? 18.0 : 32.0);
+    final double fieldSpacing = rh.space(rh.screenHeight < 600 ? 10.0 : 16.0);
+    final double passwordToForgotSpace = rh.space(rh.screenHeight < 600 ? 4.0 : 6.0);
+    final double forgotPasswordFontSize = rh.text(13.0);
+    final double buttonSpace = rh.space(rh.screenHeight < 600 ? 14.0 : 24.0);
+    // Button height and fontSize are scaled dynamically inside CustomButton, so we pass base values
+    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
+    final double buttonFontSize = 15.0;
+    final double postButtonSpace = rh.space(rh.screenHeight < 600 ? 14.0 : 20.0);
+    final double bottomTextFontSize = rh.text(13.0);
 
     return Scaffold(
       backgroundColor: Colors.black, // simple clean background
@@ -356,8 +348,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: postButtonSpace),
                               
                               // 8. Bottom Section (Navigates to Signup Screen)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 4,
+                                runSpacing: 4,
                                 children: [
                                   Text(
                                     "Don't have an account?",

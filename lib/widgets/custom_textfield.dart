@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/responsive_helper.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -27,17 +28,24 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rh = ResponsiveHelper(context);
+    final double computedFontSize = rh.text(15.0);
+    final double computedLabelFontSize = rh.text(14.0);
+    final double computedVerticalPadding = rh.space(verticalPadding);
+    final double computedIconSize = rh.space(18.0);
+    final double computedErrorFontSize = rh.text(12.0);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 2),
+          padding: EdgeInsets.only(left: 4, bottom: rh.space(2)),
           child: Text(
             label,
             style: GoogleFonts.inter(
               color: const Color(0xFFB3B3B3), // softGrey
               fontWeight: FontWeight.w600,
-              fontSize: 14,
+              fontSize: computedLabelFontSize,
             ),
           ),
         ),
@@ -48,49 +56,49 @@ class CustomTextField extends StatelessWidget {
           keyboardType: keyboardType,
           style: GoogleFonts.inter(
             color: const Color(0xFFFFFFFF), // pureWhite
-            fontSize: 15,
+            fontSize: computedFontSize,
           ),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: GoogleFonts.inter(
               color: const Color(0xFF666666), // mediumGrey
-              fontSize: 15,
+              fontSize: computedFontSize,
             ),
             filled: true,
             fillColor: const Color(0xFF0A0A0A), // darkSurface
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: verticalPadding),
+            contentPadding: EdgeInsets.symmetric(horizontal: rh.space(12), vertical: computedVerticalPadding),
             prefixIcon: prefixIcon != null
                 ? Icon(
                     prefixIcon,
                     color: const Color(0xFFB3B3B3), // softGrey
-                    size: 18,
+                    size: computedIconSize,
                   )
                 : null,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(rh.space(12)),
               borderSide: const BorderSide(color: Color(0xFF262626)), // borderSubtle
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(rh.space(12)),
               borderSide: const BorderSide(color: Color(0xFF262626)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(rh.space(12)),
               borderSide: const BorderSide(
                 color: Color(0xFFE50914), // livoraRed
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(rh.space(12)),
               borderSide: const BorderSide(
                 color: Color(0xFFE50914), // error/livoraRed
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(rh.space(12)),
               borderSide: const BorderSide(
                 color: Color(0xFFE50914),
                 width: 1.5,
@@ -98,7 +106,7 @@ class CustomTextField extends StatelessWidget {
             ),
             errorStyle: GoogleFonts.inter(
               color: const Color(0xFFE50914),
-              fontSize: 12,
+              fontSize: computedErrorFontSize,
             ),
           ),
         ),

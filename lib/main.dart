@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'widgets/custom_button.dart';
+import 'utils/responsive_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,35 +92,27 @@ class SuccessScreen extends StatelessWidget {
     final String email = user.email ?? 'No email';
     final AuthService authService = AuthService();
 
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final screenHeight = mediaQuery.size.height;
-
-    // Scale factor based on standard mobile width of 375
-    // Constrained so font sizes and spacing scale nicely on small/large mobile screens
-    final double scaleFactor = (screenWidth < 600) 
-        ? (screenWidth / 375.0).clamp(0.85, 1.15) 
-        : 1.0;
+    final rh = ResponsiveHelper(context);
 
     // Responsive padding and spacing calculations
-    final double screenPaddingHorizontal = (screenWidth < 360 ? 12.0 : 24.0) * scaleFactor;
-    final double screenPaddingVertical = (screenHeight < 600 ? 8.0 : 16.0) * scaleFactor;
-    final double cardPadding = (screenWidth < 360 ? 16.0 : 32.0) * scaleFactor;
+    final double screenPaddingHorizontal = rh.screenPaddingHorizontal;
+    final double screenPaddingVertical = rh.screenPaddingVertical;
+    final double cardPadding = rh.cardPaddingHorizontal;
     
     // Cap form card max width at 450px for tablet/web support
-    final double maxContentWidth = screenWidth < 600 ? (screenWidth - screenPaddingHorizontal * 2).clamp(280.0, 450.0) : 450.0;
+    final double maxContentWidth = rh.maxContentWidth;
 
     // Responsive sizes for elements inside card
-    final double iconSize = (screenHeight < 600 ? 60.0 : 80.0) * scaleFactor;
-    final double titleFontSize = 28.0 * scaleFactor;
-    final double subtitleFontSize = 16.0 * scaleFactor;
-    final double emailFontSize = 14.0 * scaleFactor;
-    final double buttonHeight = (screenHeight < 600 ? 44.0 : 52.0) * scaleFactor;
-    final double buttonFontSize = 16.0 * scaleFactor;
+    final double iconSize = rh.space(rh.screenHeight < 600 ? 56.0 : 72.0);
+    final double titleFontSize = rh.text(24.0);
+    final double subtitleFontSize = rh.text(14.0);
+    final double emailFontSize = rh.text(12.0);
+    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
+    final double buttonFontSize = 15.0;
 
-    final double spacerSmall = 12.0 * scaleFactor;
-    final double spacerMedium = 24.0 * scaleFactor;
-    final double spacerLarge = 40.0 * scaleFactor;
+    final double spacerSmall = rh.space(12.0);
+    final double spacerMedium = rh.space(24.0);
+    final double spacerLarge = rh.space(36.0);
 
     return Scaffold(
       backgroundColor: const Color(0xFF000000), // simple clean background
