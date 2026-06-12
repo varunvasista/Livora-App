@@ -8,8 +8,13 @@ import 'signup_screen.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String email;
+  final bool isFromLogin;
 
-  const VerifyEmailScreen({super.key, required this.email});
+  const VerifyEmailScreen({
+    super.key,
+    required this.email,
+    this.isFromLogin = false,
+  });
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -52,7 +57,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Verification pending. Please click the link in your verification email.'),
+            content: Text('Verification is still pending. Please check your inbox.'),
             backgroundColor: Color(0xFFE50914),
           ),
         );
@@ -113,12 +118,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     }
   }
 
-  Future<void> _returnToLogin() async {
-    await _authService.signOut();
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -284,23 +284,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                                         fontSize: rh.text(14.0),
                                       ),
                                     ),
-                            ),
-                            SizedBox(height: rh.space(4)),
-
-                            // Return to Login Button
-                            TextButton(
-                              onPressed: _returnToLogin,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: rh.space(12)),
-                              ),
-                              child: Text(
-                                'Return to Login',
-                                style: GoogleFonts.inter(
-                                  color: textLight,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: rh.text(14.0),
-                                ),
-                              ),
                             ),
                           ],
                         ),

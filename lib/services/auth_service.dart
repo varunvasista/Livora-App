@@ -53,14 +53,22 @@ class AuthService {
         password: password,
       );
       
-      if (credential.user != null && !credential.user!.emailVerified) {
-        // Optionally resend verification email on block
-        await credential.user!.sendEmailVerification();
-        await _auth.signOut();
-        throw FirebaseAuthException(
-          code: 'email-not-verified',
-          message: 'Please verify your email address. A verification email has been sent/resent to your email.',
-        );
+      if (credential.user != null) {
+        await credential.user!.reload();
+        final updatedUser = _auth.currentUser;
+        if (updatedUser != null && !updatedUser.emailVerified) {
+          // Optionally resend verification email on block
+          try {
+            await updatedUser.sendEmailVerification();
+          } catch (e) {
+            // Ignore/log rate-limiting or other email sending errors to avoid blocking the redirect
+            debugPrint('Failed to optionally send verification email: $e');
+          }
+          throw FirebaseAuthException(
+            code: 'email-not-verified',
+            message: 'Your email is not verified. Please verify your email address to continue.',
+          );
+        }
       }
 
       final displayName = credential.user?.displayName ?? '';

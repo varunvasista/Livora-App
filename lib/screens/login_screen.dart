@@ -6,6 +6,7 @@ import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
 import 'signup_screen.dart';
+import 'verify_email_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,6 +48,24 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) {
+          if (e.code == 'email-not-verified') {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => VerifyEmailScreen(
+                  email: _emailController.text.trim(),
+                  isFromLogin: true,
+                ),
+              ),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Your email is not verified. Please verify your email address to continue.'),
+                backgroundColor: Color(0xFFE50914),
+              ),
+            );
+            return;
+          }
+
           String title = 'Invalid Credentials';
           String subtitle = 'The email address or password you entered is incorrect. Please try again.';
 
@@ -56,9 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
           } else if (e.code == 'account-pending') {
             title = 'Account Pending';
             subtitle = 'Your account is awaiting administrator approval. Please try again later.';
-          } else if (e.code == 'email-not-verified') {
-            title = 'Email Not Verified';
-            subtitle = 'Please check your inbox. A verification email has been sent/resent to your email address.';
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
