@@ -78,15 +78,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final actionCodeSettings = ActionCodeSettings(
-          url: 'https://edirectory-ecfcf.firebaseapp.com/verify.html?continueUrl=https://edirectory-ecfcf.firebaseapp.com/',
-          handleCodeInApp: false,
-          androidPackageName: 'com.edirectory.livora',
-          androidInstallApp: true,
-          androidMinimumVersion: '1',
-          iOSBundleId: 'com.edirectory.livora',
-        );
-        await user.sendEmailVerification(actionCodeSettings);
+        await user.sendEmailVerification();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

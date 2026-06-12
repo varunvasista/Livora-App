@@ -28,15 +28,7 @@ class AuthService {
       await credential.user?.updateDisplayName('$fullName|pending');
       
       // Send verification email
-      final actionCodeSettings = ActionCodeSettings(
-        url: 'https://edirectory-ecfcf.firebaseapp.com/verify.html?continueUrl=https://edirectory-ecfcf.firebaseapp.com/',
-        handleCodeInApp: false,
-        androidPackageName: 'com.edirectory.livora',
-        androidInstallApp: true,
-        androidMinimumVersion: '1',
-        iOSBundleId: 'com.edirectory.livora',
-      );
-      await credential.user?.sendEmailVerification(actionCodeSettings);
+      await credential.user?.sendEmailVerification();
       
       // Print/log variables for reference in demo/CTO review
       // In production, this can write to Firestore or assign Custom Claims
@@ -63,15 +55,7 @@ class AuthService {
       
       if (credential.user != null && !credential.user!.emailVerified) {
         // Optionally resend verification email on block
-        final actionCodeSettings = ActionCodeSettings(
-          url: 'https://edirectory-ecfcf.firebaseapp.com/verify.html?continueUrl=https://edirectory-ecfcf.firebaseapp.com/',
-          handleCodeInApp: false,
-          androidPackageName: 'com.edirectory.livora',
-          androidInstallApp: true,
-          androidMinimumVersion: '1',
-          iOSBundleId: 'com.edirectory.livora',
-        );
-        await credential.user!.sendEmailVerification(actionCodeSettings);
+        await credential.user!.sendEmailVerification();
         await _auth.signOut();
         throw FirebaseAuthException(
           code: 'email-not-verified',
