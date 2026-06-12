@@ -25,7 +25,7 @@ class AuthService {
       );
       
       // Update display name with status=pending suffix
-      await credential.user?.updateDisplayName('$fullName|pending');
+      await credential.user?.updateDisplayName('$fullName|$accountType|pending');
       
       // Send verification email
       await credential.user?.sendEmailVerification();
@@ -71,13 +71,33 @@ class AuthService {
         }
       }
 
-      final displayName = credential.user?.displayName ?? '';
-      if (displayName.endsWith('|pending')) {
-        await _auth.signOut();
-        throw FirebaseAuthException(
-          code: 'account-pending',
-          message: 'Your account is awaiting administrator approval. Please try again later.',
-        );
+      if (credential.user != null) {
+        final displayName = credential.user?.displayName ?? '';
+        final parts = displayName.split('|');
+        String fullName = parts.isNotEmpty ? parts[0] : 'User';
+        String accountType = 'user';
+        String status = 'active';
+
+        if (parts.length == 3) {
+          accountType = parts[1];
+          status = parts[2];
+        } else if (parts.length == 2) {
+          accountType = 'user';
+          status = parts[1];
+        }
+
+        if (accountType == 'organization' && status == 'pending') {
+          await _auth.signOut();
+          throw FirebaseAuthException(
+            code: 'account-pending',
+            message: 'Your account is awaiting administrator approval. Please try again later.',
+          );
+        }
+
+        // For user accounts, if status is pending, automatically activate it
+        if (accountType == 'user' && status == 'pending') {
+          await credential.user!.updateDisplayName('$fullName|user|active');
+        }
       }
       
       return credential;

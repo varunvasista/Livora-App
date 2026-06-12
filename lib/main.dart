@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'widgets/custom_button.dart';
 import 'utils/responsive_helper.dart';
 
@@ -66,13 +67,29 @@ class AuthWrapper extends StatelessWidget {
 
         final user = snapshot.data;
         if (user != null) {
-          final displayName = user.displayName ?? '';
-          if (displayName.endsWith('|pending') || !user.emailVerified) {
+          if (!user.emailVerified) {
             return const LoginScreen();
           }
-          return SuccessScreen(user: user);
-        }
 
+          final displayName = user.displayName ?? '';
+          final parts = displayName.split('|');
+          String accountType = 'user';
+          String status = 'active';
+
+          if (parts.length == 3) {
+            accountType = parts[1];
+            status = parts[2];
+          } else if (parts.length == 2) {
+            accountType = 'user';
+            status = parts[1];
+          }
+
+          if (accountType == 'organization' && status == 'pending') {
+            return const LoginScreen();
+          }
+
+          return HomeScreen(user: user);
+        }
         return const LoginScreen();
       },
     );

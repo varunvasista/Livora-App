@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
 import 'signup_screen.dart';
+import 'home_screen.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String email;
@@ -34,20 +35,51 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         // Get the updated user state
         final updatedUser = FirebaseAuth.instance.currentUser;
         if (updatedUser != null && updatedUser.emailVerified) {
-          // Sign out explicitly so they remain signed out while awaiting admin approval
-          await _authService.signOut();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Email verified successfully!'),
-                backgroundColor: Color(0xFF2ECC71),
-              ),
-            );
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => const ApprovalWaitingScreen(),
-              ),
-            );
+          final displayName = updatedUser.displayName ?? '';
+          final parts = displayName.split('|');
+          String fullName = parts.isNotEmpty ? parts[0] : 'User';
+          String accountType = 'user';
+
+          if (parts.length == 3) {
+            accountType = parts[1];
+          } else if (parts.length == 2) {
+            accountType = 'user';
+          }
+
+          if (accountType == 'user') {
+            // Automatically mark the account as active
+            await updatedUser.updateDisplayName('$fullName|user|active');
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Email verified successfully!'),
+                  backgroundColor: Color(0xFF2ECC71),
+                ),
+              );
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => HomeScreen(user: updatedUser),
+                ),
+                (route) => false,
+              );
+            }
+          } else {
+            // Organization flow remains unchanged: sign out explicitly and show pending screen
+            await _authService.signOut();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Email verified successfully!'),
+                  backgroundColor: Color(0xFF2ECC71),
+                ),
+              );
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const ApprovalWaitingScreen(),
+                ),
+              );
+            }
           }
           return;
         }
