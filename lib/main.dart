@@ -67,9 +67,7 @@ class AuthWrapper extends StatelessWidget {
         final user = snapshot.data;
         if (user != null) {
           final displayName = user.displayName ?? '';
-          if (displayName.endsWith('|pending')) {
-            // Force sign out immediately and return login screen
-            authService.signOut();
+          if (displayName.endsWith('|pending') || !user.emailVerified) {
             return const LoginScreen();
           }
           return SuccessScreen(user: user);
@@ -138,7 +136,7 @@ class SuccessScreen extends StatelessWidget {
                         padding: EdgeInsets.all(cardPadding),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0A0A0A), // darkSurface
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(rh.space(20)),
                           border: Border.all(
                             color: const Color(0xFF262626), // borderSubtle
                             width: 1.5,

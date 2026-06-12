@@ -17,15 +17,24 @@ class ResponsiveHelper {
   bool get isTablet => screenWidth >= 600 && screenWidth < 1024;
   bool get isDesktop => screenWidth >= 1024;
 
-  // Scale factor based on standard mobile width of 375
+  // Scale factor based on standard mobile width of 375 and adaptive height
   double get scaleFactor {
+    double factor = 1.0;
     if (isMobile) {
-      return (screenWidth / 375.0).clamp(0.85, 1.15);
+      factor = (screenWidth / 375.0).clamp(0.85, 1.15);
     } else if (isTablet) {
-      return 1.05;
+      factor = 1.0;
     } else {
-      return 1.1;
+      factor = 1.0;
     }
+
+    // Height constraint adaptation: if viewport height is small, scale down all spacings/text to fit vertically
+    if (screenHeight < 800) {
+      final double heightFactor = (screenHeight / 800.0).clamp(0.8, 1.0);
+      factor *= heightFactor;
+    }
+
+    return factor;
   }
 
   // Dynamic font sizing
@@ -61,9 +70,9 @@ class ResponsiveHelper {
     if (isMobile) {
       return (screenWidth < 360 ? 12.0 : (screenWidth < 400 ? 16.0 : 22.0)) * scaleFactor;
     } else if (isTablet) {
-      return 26.0;
+      return 24.0 * scaleFactor;
     } else {
-      return 28.0;
+      return 26.0 * scaleFactor;
     }
   }
 
@@ -72,20 +81,20 @@ class ResponsiveHelper {
     if (isMobile) {
       return (screenHeight < 600 ? 14.0 : 26.0) * scaleFactor;
     } else if (isTablet) {
-      return 30.0;
+      return 26.0 * scaleFactor;
     } else {
-      return 32.0;
+      return 28.0 * scaleFactor;
     }
   }
 
   // Responsive max content width for the main form card
   double get maxContentWidth {
     if (isMobile) {
-      return (screenWidth - screenPaddingHorizontal * 2).clamp(240.0, 420.0);
+      return (screenWidth - screenPaddingHorizontal * 2).clamp(240.0, 410.0);
     } else if (isTablet) {
-      return 450.0;
+      return 410.0;
     } else {
-      return 480.0;
+      return 440.0;
     }
   }
 }

@@ -56,6 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
           } else if (e.code == 'account-pending') {
             title = 'Account Pending';
             subtitle = 'Your account is awaiting administrator approval. Please try again later.';
+          } else if (e.code == 'email-not-verified') {
+            title = 'Email Not Verified';
+            subtitle = 'Please check your inbox. A verification email has been sent/resent to your email address.';
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -180,21 +183,21 @@ class _LoginScreenState extends State<LoginScreen> {
     final double maxContentWidth = rh.maxContentWidth;
 
     // Responsive sizes for elements inside card
-    final double logoSize = rh.space(rh.screenHeight < 600 ? 44.0 : 56.0);
-    final double logoToTitleSpace = rh.space(rh.screenHeight < 600 ? 12.0 : 18.0);
-    final double titleFontSize = rh.text(24.0);
-    final double titleToSubtitleSpace = rh.space(rh.screenHeight < 600 ? 6.0 : 8.0);
-    final double subtitleFontSize = rh.text(13.0);
-    final double subtitleToFieldsSpace = rh.space(rh.screenHeight < 600 ? 18.0 : 32.0);
-    final double fieldSpacing = rh.space(rh.screenHeight < 600 ? 10.0 : 16.0);
-    final double passwordToForgotSpace = rh.space(rh.screenHeight < 600 ? 4.0 : 6.0);
-    final double forgotPasswordFontSize = rh.text(13.0);
-    final double buttonSpace = rh.space(rh.screenHeight < 600 ? 14.0 : 24.0);
+    final double logoSize = rh.space(rh.screenHeight < 600 ? 40.0 : 48.0);
+    final double logoToTitleSpace = rh.space(rh.screenHeight < 600 ? 10.0 : 14.0);
+    final double titleFontSize = rh.text(22.0);
+    final double titleToSubtitleSpace = rh.space(6.0);
+    final double subtitleFontSize = rh.text(12.0);
+    final double subtitleToFieldsSpace = rh.space(rh.screenHeight < 600 ? 16.0 : 24.0);
+    final double fieldSpacing = rh.space(rh.screenHeight < 600 ? 10.0 : 14.0);
+    final double passwordToForgotSpace = rh.space(4.0);
+    final double forgotPasswordFontSize = rh.text(12.0);
+    final double buttonSpace = rh.space(rh.screenHeight < 600 ? 12.0 : 20.0);
     // Button height and fontSize are scaled dynamically inside CustomButton, so we pass base values
-    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
-    final double buttonFontSize = 15.0;
-    final double postButtonSpace = rh.space(rh.screenHeight < 600 ? 14.0 : 20.0);
-    final double bottomTextFontSize = rh.text(13.0);
+    final double buttonHeight = rh.screenHeight < 600 ? 40.0 : 44.0;
+    final double buttonFontSize = 14.5;
+    final double postButtonSpace = rh.space(rh.screenHeight < 600 ? 12.0 : 16.0);
+    final double bottomTextFontSize = rh.text(12.0);
 
     return Scaffold(
       backgroundColor: Colors.black, // simple clean background
@@ -224,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0A0A0A), // darkSurface
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(rh.space(16)),
                           border: Border.all(
                             color: const Color(0xFF262626), // borderSubtle
                             width: 1.5,
@@ -321,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: TextButton(
                                   onPressed: _handleForgotPassword,
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                    padding: EdgeInsets.symmetric(horizontal: rh.space(4), vertical: rh.space(4)),
                                     minimumSize: Size.zero,
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   ),
@@ -351,8 +354,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Wrap(
                                 alignment: WrapAlignment.center,
                                 crossAxisAlignment: WrapCrossAlignment.center,
-                                spacing: 4,
-                                runSpacing: 4,
+                                spacing: rh.space(4),
+                                runSpacing: rh.space(4),
                                 children: [
                                   Text(
                                     "Don't have an account?",
@@ -370,7 +373,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     },
                                     style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                      padding: EdgeInsets.symmetric(horizontal: rh.space(4), vertical: rh.space(4)),
                                       minimumSize: Size.zero,
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                     ),

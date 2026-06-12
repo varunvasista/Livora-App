@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
+import 'verify_email_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -20,10 +21,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final AuthService _authService = AuthService();
   
   String _completePhoneNumber = '';
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   // ignore: prefer_final_fields
   String _accountType = 'user'; // 'user' or 'organization'
   bool _isLoading = false;
@@ -34,6 +37,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -57,7 +61,7 @@ class _SignupScreenState extends State<SignupScreen> {
           );
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const ApprovalWaitingScreen(),
+              builder: (context) => VerifyEmailScreen(email: _emailController.text.trim()),
             ),
           );
         }
@@ -110,20 +114,20 @@ class _SignupScreenState extends State<SignupScreen> {
     final double maxContentWidth = rh.maxContentWidth;
 
     // Spacing heights scaled responsively
-    final double headerTitleFontSize = rh.text(22.0);
-    final double headerSubtitleFontSize = rh.text(12.0);
+    final double headerTitleFontSize = rh.text(20.0);
+    final double headerSubtitleFontSize = rh.text(11.0);
     final double headerSpacing = rh.space(4.0);
-    final double headerToFieldsSpacing = rh.space(14.0);
-    final double fieldSpacing = rh.space(8.0);
-    final double passwordToSelectionSpacing = rh.space(10.0);
-    final double selectionLabelBottomPadding = rh.space(5.0);
-    final double selectionToButtonSpacing = rh.space(14.0);
+    final double headerToFieldsSpacing = rh.space(10.0);
+    final double fieldSpacing = rh.space(7.0);
+    final double passwordToSelectionSpacing = rh.space(8.0);
+    final double selectionLabelBottomPadding = rh.space(4.0);
+    final double selectionToButtonSpacing = rh.space(10.0);
     // Button height and fontSize are scaled dynamically inside CustomButton, so we pass base values
-    final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
-    final double buttonFontSize = 15.0;
-    final double buttonToSignInSpacing = rh.space(8.0);
-    final double bottomTextFontSize = rh.text(13.0);
-    final double fieldVerticalPadding = 12.0; // custom text field scales it
+    final double buttonHeight = rh.screenHeight < 600 ? 42.0 : 46.0;
+    final double buttonFontSize = 14.5;
+    final double buttonToSignInSpacing = rh.space(6.0);
+    final double bottomTextFontSize = rh.text(12.0);
+    final double fieldVerticalPadding = 10.0; // custom text field scales it
 
     return Scaffold(
       backgroundColor: const Color(0xFF000000), // simple clean background
@@ -153,7 +157,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0A0A0A), // darkSurface
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(rh.space(16)),
                           border: Border.all(
                             color: const Color(0xFF262626), // borderSubtle
                             width: 1.5,
@@ -187,33 +191,37 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               SizedBox(height: headerToFieldsSpacing),
 
-                              // 2. Full Name
+                              // 2. Full Name / Organization Name
                               CustomTextField(
-                                label: 'Full Name',
-                                hintText: 'John Doe',
+                                label: _accountType == 'user' ? 'Full Name' : 'Organization Name',
+                                hintText: _accountType == 'user' ? 'John Doe' : 'Organization Acme',
                                 controller: _fullNameController,
-                                prefixIcon: Icons.person_outline,
+                                prefixIcon: _accountType == 'user' ? Icons.person_outline : Icons.business_outlined,
                                 verticalPadding: fieldVerticalPadding,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Full name is required';
+                                    return _accountType == 'user'
+                                        ? 'Full name is required'
+                                        : 'Organization name is required';
                                   }
                                   return null;
                                 },
                               ),
                               SizedBox(height: fieldSpacing),
 
-                              // 3. Email Address
+                              // 3. Email Address / Organization Email Address
                               CustomTextField(
-                                label: 'Email Address',
-                                hintText: 'name@example.com',
+                                label: _accountType == 'user' ? 'Email Address' : 'Organization Email Address',
+                                hintText: _accountType == 'user' ? 'name@example.com' : 'org@example.com',
                                 controller: _emailController,
                                 prefixIcon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                                 verticalPadding: fieldVerticalPadding,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Email address is required';
+                                    return _accountType == 'user'
+                                        ? 'Email address is required'
+                                        : 'Organization email address is required';
                                   }
                                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
                                   if (!emailRegex.hasMatch(value.trim())) {
@@ -224,11 +232,11 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               SizedBox(height: fieldSpacing),
 
-                              // 4. Phone Number (Optional)
+                              // 4. Phone Number / Organization Phone Number
                               Padding(
-                                padding: EdgeInsets.only(left: 4, bottom: selectionLabelBottomPadding),
+                                padding: EdgeInsets.only(left: rh.space(4), bottom: selectionLabelBottomPadding),
                                 child: Text(
-                                  'Phone Number (Optional)',
+                                  _accountType == 'user' ? 'Phone Number (Optional)' : 'Organization Phone Number',
                                   style: GoogleFonts.inter(
                                     color: const Color(0xFFB3B3B3),
                                     fontWeight: FontWeight.w600,
@@ -239,39 +247,39 @@ class _SignupScreenState extends State<SignupScreen> {
                               IntlPhoneField(
                                 controller: _phoneController,
                                 decoration: InputDecoration(
-                                  hintText: 'Phone Number',
+                                  hintText: _accountType == 'user' ? 'Phone Number' : 'Organization Phone Number',
                                   hintStyle: GoogleFonts.inter(
                                     color: const Color(0xFF666666),
-                                    fontSize: 15,
+                                    fontSize: rh.text(15.0),
                                   ),
                                   filled: true,
                                   fillColor: const Color(0xFF0A0A0A),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: fieldVerticalPadding),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: rh.space(12), vertical: rh.space(fieldVerticalPadding)),
                                   counterText: '',
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(rh.space(12)),
                                     borderSide: const BorderSide(color: Color(0xFF262626)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(rh.space(12)),
                                     borderSide: const BorderSide(color: Color(0xFF262626)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(rh.space(12)),
                                     borderSide: const BorderSide(
                                       color: Color(0xFFE50914),
                                       width: 1.5,
                                     ),
                                   ),
                                   errorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(rh.space(12)),
                                     borderSide: const BorderSide(
                                       color: Color(0xFFE50914),
                                       width: 1,
                                     ),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(rh.space(12)),
                                     borderSide: const BorderSide(
                                       color: Color(0xFFE50914),
                                       width: 1.5,
@@ -279,7 +287,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   ),
                                   errorStyle: GoogleFonts.inter(
                                     color: const Color(0xFFE50914),
-                                    fontSize: 12,
+                                    fontSize: rh.text(12.0),
                                   ),
                                 ),
                                 initialCountryCode: 'US',
@@ -288,16 +296,24 @@ class _SignupScreenState extends State<SignupScreen> {
                                 },
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: rh.text(15.0),
                                 ),
                                 dropdownTextStyle: GoogleFonts.inter(
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: rh.text(15.0),
                                 ),
                                 dropdownIcon: const Icon(
                                   Icons.arrow_drop_down,
                                   color: Color(0xFFB3B3B3),
                                 ),
+                                validator: (phone) {
+                                  if (_accountType == 'organization') {
+                                    if (phone == null || phone.number.trim().isEmpty) {
+                                      return 'Organization phone number is required';
+                                    }
+                                  }
+                                  return null;
+                                },
                               ),
                               SizedBox(height: fieldSpacing),
 
@@ -330,11 +346,42 @@ class _SignupScreenState extends State<SignupScreen> {
                                   return null;
                                 },
                               ),
+                              SizedBox(height: fieldSpacing),
+
+                              // Confirm Password
+                              CustomTextField(
+                                label: 'Confirm Password',
+                                hintText: '••••••••',
+                                controller: _confirmPasswordController,
+                                prefixIcon: Icons.lock_outlined,
+                                obscureText: _obscureConfirmPassword,
+                                verticalPadding: fieldVerticalPadding,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscureConfirmPassword
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                    color: const Color(0xFFB3B3B3),
+                                  ),
+                                  onPressed: () {
+                                    setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                                  },
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Confirm password is required';
+                                  }
+                                  if (value != _passwordController.text) {
+                                    return 'Passwords do not match';
+                                  }
+                                  return null;
+                                },
+                              ),
                               SizedBox(height: passwordToSelectionSpacing),
 
                               // 6. User Type Selection
                               Padding(
-                                padding: EdgeInsets.only(left: 4, bottom: selectionLabelBottomPadding),
+                                padding: EdgeInsets.only(left: rh.space(4), bottom: selectionLabelBottomPadding),
                                 child: Text(
                                   'I want to join as:',
                                   style: GoogleFonts.inter(
@@ -354,7 +401,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                       onTap: () => setState(() => _accountType = 'user'),
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
+                                  SizedBox(width: rh.space(16)),
                                   Expanded(
                                     child: _AccountTypeCard(
                                       title: 'Organization',
@@ -376,13 +423,13 @@ class _SignupScreenState extends State<SignupScreen> {
                                 fontSize: buttonFontSize,
                               ),
                               SizedBox(height: buttonToSignInSpacing),
-                              
+
                               // Navigate to Signin
                               Wrap(
                                 alignment: WrapAlignment.center,
                                 crossAxisAlignment: WrapCrossAlignment.center,
-                                spacing: 4,
-                                runSpacing: 4,
+                                spacing: rh.space(4),
+                                runSpacing: rh.space(4),
                                 children: [
                                   Text(
                                     'Already have an account?',
@@ -394,7 +441,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                   TextButton(
                                     onPressed: () => Navigator.of(context).pop(),
                                     style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                      padding: EdgeInsets.symmetric(horizontal: rh.space(4), vertical: rh.space(4)),
                                       minimumSize: Size.zero,
                                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                     ),
@@ -442,16 +489,16 @@ class _AccountTypeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final rh = ResponsiveHelper(context);
 
-    final double verticalPadding = rh.space(10.0);
-    final double iconSize = rh.space(22.0);
+    final double verticalPadding = rh.space(8.0);
+    final double iconSize = rh.space(20.0);
     final double spacing = rh.space(4.0);
-    final double fontSize = rh.text(12.0);
+    final double fontSize = rh.text(11.0);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(rh.space(12)),
         child: Container(
           padding: EdgeInsets.symmetric(vertical: verticalPadding),
           decoration: BoxDecoration(
@@ -460,7 +507,7 @@ class _AccountTypeCard extends StatelessWidget {
               color: isSelected ? const Color(0xFFE50914) : const Color(0xFF262626),
               width: 1.5,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(rh.space(12)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -547,16 +594,16 @@ class ApprovalWaitingScreen extends StatelessWidget {
                         padding: EdgeInsets.all(cardPadding),
                         decoration: BoxDecoration(
                           color: darkSurface, // Card Background: Very Dark Gray
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(rh.space(20)),
                           border: Border.all(
                             color: borderDark, // Borders: Dark Gray
                             width: 1.5,
                           ),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: Color(0x80000000), // Subtle shadow
-                              blurRadius: 15,
-                              offset: Offset(0, 8),
+                              color: const Color(0x80000000), // Subtle shadow
+                              blurRadius: rh.space(15),
+                              offset: Offset(0, rh.space(8)),
                             ),
                           ],
                         ),

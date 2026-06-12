@@ -27,12 +27,20 @@ class AuthService {
       // Update display name with status=pending suffix
       await credential.user?.updateDisplayName('$fullName|pending');
       
+      // Send verification email
+      final actionCodeSettings = ActionCodeSettings(
+        url: 'https://edirectory-ecfcf.firebaseapp.com/verify.html?continueUrl=https://edirectory-ecfcf.firebaseapp.com/',
+        handleCodeInApp: false,
+        androidPackageName: 'com.edirectory.livora',
+        androidInstallApp: true,
+        androidMinimumVersion: '1',
+        iOSBundleId: 'com.edirectory.livora',
+      );
+      await credential.user?.sendEmailVerification(actionCodeSettings);
+      
       // Print/log variables for reference in demo/CTO review
       // In production, this can write to Firestore or assign Custom Claims
       debugPrint('Firebase Auth Signup Successful: Full Name: $fullName, Email: $email, Phone: $phone, Account Type: $accountType, Status: pending');
-      
-      // Sign out immediately so they are not automatically logged in
-      await _auth.signOut();
       
       return credential;
     } on FirebaseAuthException {
@@ -53,6 +61,24 @@ class AuthService {
         password: password,
       );
       
+      if (credential.user != null && !credential.user!.emailVerified) {
+        // Optionally resend verification email on block
+        final actionCodeSettings = ActionCodeSettings(
+          url: 'https://edirectory-ecfcf.firebaseapp.com/verify.html?continueUrl=https://edirectory-ecfcf.firebaseapp.com/',
+          handleCodeInApp: false,
+          androidPackageName: 'com.edirectory.livora',
+          androidInstallApp: true,
+          androidMinimumVersion: '1',
+          iOSBundleId: 'com.edirectory.livora',
+        );
+        await credential.user!.sendEmailVerification(actionCodeSettings);
+        await _auth.signOut();
+        throw FirebaseAuthException(
+          code: 'email-not-verified',
+          message: 'Please verify your email address. A verification email has been sent/resent to your email.',
+        );
+      }
+
       final displayName = credential.user?.displayName ?? '';
       if (displayName.endsWith('|pending')) {
         await _auth.signOut();

@@ -39,7 +39,7 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(left: 4, bottom: rh.space(2)),
+          padding: EdgeInsets.only(left: rh.space(4), bottom: rh.space(2)),
           child: Text(
             label,
             style: GoogleFonts.inter(
