@@ -190,7 +190,7 @@ flutter build web
 
 ## Author
 
-**Harshitha Srikakolapu**
+**Gayatri Pippalla**
 
 Computer Science Engineering Student  
 Flutter Developer | AI Enthusiast | Community Builder
