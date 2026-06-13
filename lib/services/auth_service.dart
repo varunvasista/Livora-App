@@ -1,8 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+
+  static SharedPreferences? _prefs;
+
+  static Future<void> initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  bool get hasLoggedInBefore => _prefs?.getBool('hasLoggedInBefore') ?? false;
+
+  Future<void> setHasLoggedInBefore(bool value) async {
+    await _prefs?.setBool('hasLoggedInBefore', value);
+  }
 
   // Stream of User auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -87,11 +101,18 @@ class AuthService {
         }
 
         if (accountType == 'organization' && status == 'pending') {
-          await _auth.signOut();
-          throw FirebaseAuthException(
-            code: 'account-pending',
-            message: 'Your account is awaiting administrator approval. Please try again later.',
-          );
+          // Check if they have already submitted organization details.
+          // Under Incomplete Organization Registration Protection, if the details
+          // document does not exist, we allow them to log in so they can finish
+          // onboarding. We only block and sign out if the document exists (pending approval).
+          final doc = await FirebaseFirestore.instance.collection('organizations').doc(credential.user!.uid).get();
+          if (doc.exists) {
+            await _auth.signOut();
+            throw FirebaseAuthException(
+              code: 'account-pending',
+              message: 'Your account is awaiting administrator approval. Please try again later.',
+            );
+          }
         }
 
         // For user accounts, if status is pending, automatically activate it

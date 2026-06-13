@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/signup_screen.dart';
+import 'screens/organization_approval_waiting_screen.dart';
+import 'screens/organization_details_screen.dart';
 import 'widgets/custom_button.dart';
 import 'utils/responsive_helper.dart';
+import 'utils/snackbar_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +21,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  await AuthService.initPrefs();
   
   runApp(const MyApp());
 }
@@ -85,8 +92,30 @@ class AuthWrapper extends StatelessWidget {
           }
 
           if (accountType == 'organization' && status == 'pending') {
-            return const LoginScreen();
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance.collection('organizations').doc(user.uid).get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    backgroundColor: Color(0xFF000000),
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFE50914)),
+                      ),
+                    ),
+                  );
+                }
+                
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  return const OrganizationApprovalWaitingScreen();
+                }
+                return const OrganizationDetailsScreen();
+              },
+            );
           }
+
+          // Mark that user has logged in before successfully
+          authService.setHasLoggedInBefore(true);
 
           return HomeScreen(user: user);
         }
@@ -213,14 +242,17 @@ class SuccessScreen extends StatelessWidget {
                               fontSize: buttonFontSize,
                               onPressed: () async {
                                 await authService.signOut();
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Successfully logged out!'),
-                                      backgroundColor: Color(0xFFE50914),
-                                    ),
-                                  );
-                                }
+                                 if (context.mounted) {
+                                   SnackbarHelper.show(
+                                     context: context,
+                                     message: 'Successfully logged out!',
+                                     backgroundColor: const Color(0xFFE50914),
+                                   );
+                                   Navigator.of(context).pushAndRemoveUntil(
+                                     MaterialPageRoute(builder: (context) => const AuthWrapper()),
+                                     (route) => false,
+                                   );
+                                 }
                               },
                             ),
                           ],

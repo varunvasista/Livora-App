@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/snackbar_helper.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 
@@ -50,12 +51,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             // Automatically mark the account as active
             await updatedUser.updateDisplayName('$fullName|user|active');
             
+            // Set the login flag
+            await _authService.setHasLoggedInBefore(true);
+            
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Email verified successfully!'),
-                  backgroundColor: Color(0xFF2ECC71),
-                ),
+              SnackbarHelper.show(
+                context: context,
+                message: 'Email verified successfully!',
+                backgroundColor: const Color(0xFF2ECC71),
               );
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
@@ -65,14 +68,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               );
             }
           } else {
-            // Organization flow remains unchanged: sign out explicitly and show pending screen
-            await _authService.signOut();
+            // Keep organization user logged in for onboarding details submission
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Email verified successfully!'),
-                  backgroundColor: Color(0xFF2ECC71),
-                ),
+              SnackbarHelper.show(
+                context: context,
+                message: 'Email verified successfully!',
+                backgroundColor: const Color(0xFF2ECC71),
               );
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
@@ -87,20 +88,18 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       
       // If not verified
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification is still pending. Please check your inbox.'),
-            backgroundColor: Color(0xFFE50914),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: 'Verification is still pending. Please check your inbox.',
+          backgroundColor: const Color(0xFFE50914),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error checking status: ${e.toString()}'),
-            backgroundColor: const Color(0xFFE50914),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: 'Error checking status: ${e.toString()}',
+          backgroundColor: const Color(0xFFE50914),
         );
       }
     } finally {
@@ -117,30 +116,27 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       if (user != null) {
         await user.sendEmailVerification();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Verification email resent! Please check your inbox.'),
-              backgroundColor: Color(0xFF2ECC71),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: 'Verification email resent! Please check your inbox.',
+            backgroundColor: const Color(0xFF2ECC71),
           );
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error: No active user session found.'),
-              backgroundColor: Color(0xFFE50914),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: 'Error: No active user session found.',
+            backgroundColor: const Color(0xFFE50914),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to resend: ${e.toString()}'),
-            backgroundColor: const Color(0xFFE50914),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: 'Failed to resend: ${e.toString()}',
+          backgroundColor: const Color(0xFFE50914),
         );
       }
     } finally {

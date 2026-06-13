@@ -6,7 +6,9 @@ import '../services/auth_service.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/snackbar_helper.dart';
 import 'verify_email_screen.dart';
+import 'organization_details_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -53,11 +55,10 @@ class _SignupScreenState extends State<SignupScreen> {
           accountType: _accountType,
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account successfully created!'),
-              backgroundColor: Color(0xFF2ECC71),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: 'Account successfully created!',
+            backgroundColor: const Color(0xFF2ECC71),
           );
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -77,20 +78,18 @@ class _SignupScreenState extends State<SignupScreen> {
           } else if (e.message != null) {
             errorMessage = e.message!;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: const Color(0xFFE50914),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: errorMessage,
+            backgroundColor: const Color(0xFFE50914),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: const Color(0xFFE50914),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: 'Error: ${e.toString()}',
+            backgroundColor: const Color(0xFFE50914),
           );
         }
       } finally {
@@ -562,7 +561,6 @@ class ApprovalWaitingScreen extends StatelessWidget {
     final double titleFontSize = rh.text(24.0);
     final double subtitleFontSize = rh.text(14.0);
     final double additionalMsgFontSize = rh.text(12.0);
-    // Button scales internally
     final double buttonHeight = rh.screenHeight < 600 ? 44.0 : 50.0;
     final double buttonFontSize = 15.0;
 
@@ -642,7 +640,7 @@ class ApprovalWaitingScreen extends StatelessWidget {
                             
                             // Subtitle
                             Text(
-                              'Your account has been submitted successfully and is currently awaiting administrator approval.',
+                              'Your account has been created successfully.\n\nTo continue the organization onboarding process, please provide your organization details for administrative review and verification.',
                               style: GoogleFonts.inter(
                                 color: textLight, // Body Text: Light Gray
                                 fontSize: subtitleFontSize,
@@ -654,7 +652,7 @@ class ApprovalWaitingScreen extends StatelessWidget {
                             
                             // Additional Message
                             Text(
-                              'You will be able to sign in once your account has been reviewed and approved by an administrator.\n\nPlease wait for confirmation before attempting to log in.',
+                              'Click "Next" to fill in your organization information. Your organization will be reviewed by the Livora administration team before approval.',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF666666), // Medium Gray/Darker text
                                 fontSize: additionalMsgFontSize,
@@ -663,12 +661,14 @@ class ApprovalWaitingScreen extends StatelessWidget {
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: spacerLarge),
-                            
-                            // Button: Return to Login (styled in solid red)
                             CustomButton(
-                              text: 'Return to Login',
+                              text: 'Next',
                               onPressed: () {
-                                Navigator.of(context).pop();
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => const OrganizationDetailsScreen(),
+                                  ),
+                                );
                               },
                               height: buttonHeight,
                               fontSize: buttonFontSize,

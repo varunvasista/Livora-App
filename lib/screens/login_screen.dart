@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/snackbar_helper.dart';
 import 'signup_screen.dart';
 import 'verify_email_screen.dart';
 
@@ -38,12 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+        await _authService.setHasLoggedInBefore(true);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Successfully authenticated!'),
-              backgroundColor: Color(0xFF2ECC71),
-            ),
+          SnackbarHelper.show(
+            context: context,
+            message: 'Successfully authenticated!',
+            backgroundColor: const Color(0xFF2ECC71),
           );
         }
       } on FirebaseAuthException catch (e) {
@@ -57,11 +58,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             );
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Your email is not verified. Please verify your email address to continue.'),
-                backgroundColor: Color(0xFFE50914),
-              ),
+            SnackbarHelper.show(
+              context: context,
+              message: 'Your email is not verified. Please verify your email address to continue.',
+              backgroundColor: const Color(0xFFE50914),
             );
             return;
           }
@@ -77,58 +77,56 @@ class _LoginScreenState extends State<LoginScreen> {
             subtitle = 'Your account is awaiting administrator approval. Please try again later.';
           }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+          SnackbarHelper.show(
+            context: context,
+            message: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
                   ),
-                ],
-              ),
-              backgroundColor: const Color(0xFFE50914),
+                ),
+              ],
             ),
+            backgroundColor: const Color(0xFFE50914),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Invalid Credentials',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+          SnackbarHelper.show(
+            context: context,
+            message: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Invalid Credentials',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    'The email address or password you entered is incorrect. Please try again.',
-                    style: TextStyle(
-                      fontSize: 12,
-                    ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'The email address or password you entered is incorrect. Please try again.',
+                  style: TextStyle(
+                    fontSize: 12,
                   ),
-                ],
-              ),
-              backgroundColor: Color(0xFFE50914),
+                ),
+              ],
             ),
+            backgroundColor: const Color(0xFFE50914),
           );
         }
       } finally {
@@ -142,11 +140,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleForgotPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email address to reset your password.'),
-          backgroundColor: Color(0xFFE50914),
-        ),
+      SnackbarHelper.show(
+        context: context,
+        message: 'Please enter your email address to reset your password.',
+        backgroundColor: const Color(0xFFE50914),
       );
       return;
     }
@@ -155,29 +152,26 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _authService.sendPasswordResetEmail(email);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Password reset email sent to $email.'),
-            backgroundColor: const Color(0xFF2ECC71),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: 'Password reset email sent to $email.',
+          backgroundColor: const Color(0xFF2ECC71),
         );
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message ?? 'Failed to send password reset email.'),
-            backgroundColor: const Color(0xFFE50914),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: e.message ?? 'Failed to send password reset email.',
+          backgroundColor: const Color(0xFFE50914),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: const Color(0xFFE50914),
-          ),
+        SnackbarHelper.show(
+          context: context,
+          message: 'Error: ${e.toString()}',
+          backgroundColor: const Color(0xFFE50914),
         );
       }
     } finally {
@@ -263,9 +257,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               SizedBox(height: logoToTitleSpace),
                               
-                              // 2. Heading: Welcome Back (Responsive text)
+                              // 2. Heading: Welcome / Welcome Back (Responsive text)
                               Text(
-                                'Welcome Back',
+                                _authService.hasLoggedInBefore ? 'Welcome Back' : 'Welcome',
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontSize: titleFontSize,
@@ -276,9 +270,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               SizedBox(height: titleToSubtitleSpace),
                               
-                              // 3. Subtitle: Sign in to continue (Responsive text)
+                              // 3. Subtitle (Responsive text)
                               Text(
-                                'Sign in to continue',
+                                _authService.hasLoggedInBefore
+                                    ? 'Sign in to continue'
+                                    : 'Sign in or create an account to get started',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFFB3B3B3),
                                   fontSize: subtitleFontSize,
@@ -364,46 +360,48 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: buttonHeight,
                                 fontSize: buttonFontSize,
                               ),
-                              SizedBox(height: postButtonSpace),
-                              
-                              // 8. Bottom Section (Navigates to Signup Screen)
-                              Wrap(
-                                alignment: WrapAlignment.center,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                spacing: rh.space(4),
-                                runSpacing: rh.space(4),
-                                children: [
-                                  Text(
-                                    "Don't have an account?",
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFFB3B3B3),
-                                      fontSize: bottomTextFontSize,
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => const SignupScreen(),
-                                        ),
-                                      );
-                                    },
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(horizontal: rh.space(4), vertical: rh.space(4)),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      'Sign Up',
+                              if (!_authService.hasLoggedInBefore) ...[
+                                SizedBox(height: postButtonSpace),
+                                
+                                // 8. Bottom Section (Navigates to Signup Screen)
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: rh.space(4),
+                                  runSpacing: rh.space(4),
+                                  children: [
+                                    Text(
+                                      "Don't have an account?",
                                       style: GoogleFonts.inter(
-                                        color: const Color(0xFFE50914),
-                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFFB3B3B3),
                                         fontSize: bottomTextFontSize,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => const SignupScreen(),
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(horizontal: rh.space(4), vertical: rh.space(4)),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: Text(
+                                        'Sign Up',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFFE50914),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: bottomTextFontSize,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),

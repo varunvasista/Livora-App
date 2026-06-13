@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_button.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/snackbar_helper.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final User user;
@@ -173,11 +175,14 @@ class HomeScreen extends StatelessWidget {
                               onPressed: () async {
                                 await authService.signOut();
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Successfully logged out!'),
-                                      backgroundColor: Color(0xFFE50914),
-                                    ),
+                                  SnackbarHelper.show(
+                                    context: context,
+                                    message: 'Successfully logged out!',
+                                    backgroundColor: const Color(0xFFE50914),
+                                  );
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                    (route) => false,
                                   );
                                 }
                               },
